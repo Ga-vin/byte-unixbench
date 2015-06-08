@@ -37,6 +37,104 @@
 # CONFIGURATION
 ##############################################################################
 
+# Add by jiaojinxing1987@gmail.com, Begin:
+
+#*********************************************************************************************************
+# include config.mk
+#*********************************************************************************************************
+CONFIG_MK_EXIST = $(shell if [ -f ../config.mk ]; then echo exist; else echo notexist; fi;)
+ifeq ($(CONFIG_MK_EXIST), exist)
+include ../config.mk
+else
+CONFIG_MK_EXIST = $(shell if [ -f config.mk ]; then echo exist; else echo notexist; fi;)
+ifeq ($(CONFIG_MK_EXIST), exist)
+include config.mk
+else
+CONFIG_MK_EXIST =
+endif
+endif
+
+#*********************************************************************************************************
+# check configure
+#*********************************************************************************************************
+check_defined = \
+    $(foreach 1,$1,$(__check_defined))
+__check_defined = \
+    $(if $(value $1),, \
+      $(error Undefined $1$(if $(value 2), ($(strip $2)))))
+
+$(call check_defined, CONFIG_MK_EXIST, Please configure this project in RealCoder or \
+create a config.mk file!)
+$(call check_defined, SYLIXOS_BASE_PATH, SylixOS base project path)
+$(call check_defined, TOOLCHAIN_PREFIX, the prefix name of toolchain)
+$(call check_defined, DEBUG_LEVEL, debug level(debug or release))
+
+#*********************************************************************************************************
+# configure area you can set the following config to you own system
+# FPUFLAGS (-mfloat-abi=softfp -mfpu=vfpv3 ...)
+# CPUFLAGS (-mcpu=arm920t ...)
+# NOTICE: libsylixos, BSP and other kernel modules projects CAN NOT use vfp!
+#*********************************************************************************************************
+FPUFLAGS = 
+CPUFLAGS = -mcpu=arm920t $(FPUFLAGS)
+
+#*********************************************************************************************************
+# toolchain select
+#*********************************************************************************************************
+CC  = $(TOOLCHAIN_PREFIX)gcc
+CXX = $(TOOLCHAIN_PREFIX)g++
+AS  = $(TOOLCHAIN_PREFIX)gcc
+AR  = $(TOOLCHAIN_PREFIX)ar
+LD  = $(TOOLCHAIN_PREFIX)g++
+
+#*********************************************************************************************************
+# build path
+#*********************************************************************************************************
+ifeq ($(DEBUG_LEVEL), debug)
+OUTDIR = Debug
+else
+OUTDIR = Release
+endif
+
+#*********************************************************************************************************
+# include path
+#*********************************************************************************************************
+INCDIR  = -I"$(SYLIXOS_BASE_PATH)/libsylixos/SylixOS"
+INCDIR += -I"$(SYLIXOS_BASE_PATH)/libsylixos/SylixOS/include"
+INCDIR += -I"$(SYLIXOS_BASE_PATH)/libsylixos/SylixOS/include/inet"
+
+#*********************************************************************************************************
+# compiler preprocess
+#*********************************************************************************************************
+DSYMBOL  = -DSYLIXOS -DSYLIXOS_LIB
+
+#*********************************************************************************************************
+# depend dynamic library
+#*********************************************************************************************************
+DEPEND_DLL = -lvpmpdm
+
+#*********************************************************************************************************
+# depend dynamic library search path
+#*********************************************************************************************************
+DEPEND_DLL_PATH = -L"$(SYLIXOS_BASE_PATH)/libsylixos/$(OUTDIR)"
+
+#*********************************************************************************************************
+# compiler optimize
+#*********************************************************************************************************
+ifeq ($(DEBUG_LEVEL), debug)
+OPTIMIZE = -O0 -g3 -gdwarf-2
+else
+OPTIMIZE = -O2 -g1 -gdwarf-2											# Do NOT use -O3 and -Os
+endif										    						# -Os is not align for function
+																		# loop and jump.
+#*********************************************************************************************************
+# depends and compiler parameter (cplusplus in kernel MUST NOT use exceptions and rtti)
+#*********************************************************************************************************
+COMMONFLAGS = $(CPUFLAGS) $(OPTIMIZE) -Wall -fmessage-length=0 -fsigned-char -fno-short-enums
+CFLAGS      = $(DSYMBOL) $(INCDIR) $(COMMONFLAGS) -fPIC -D_POSIX_C_SOURCE=200112L -c
+LDFLAGS     = $(CPUFLAGS) -nostdlib -fPIC -shared $(DEPEND_DLL_PATH) $(DEPEND_DLL) -lm -lgcc
+# Add by jiaojinxing1987@gmail.com, The END.
+
 SHELL = /bin/sh
 
 # GRAPHICS TESTS: Uncomment the definition of "GRAPHIC_TESTS" to enable
@@ -53,7 +151,7 @@ GL_LIBS = -lGL -lXext -lX11
 # COMPILER CONFIGURATION: Set "CC" to the name of the compiler to use
 # to build the binary benchmarks.  You should also set "$cCompiler" in the
 # Run script to the name of the compiler you want to test.
-CC=gcc
+#CC=gcc
 
 # OPTIMISATION SETTINGS:
 
@@ -78,7 +176,7 @@ OPTON = -O2 -fomit-frame-pointer -fforce-addr -ffast-math -Wall
 #CFLAGS = -DTIME -std1 -verbose -w0
 
 ## generic gcc CFLAGS.  -DTIME must be included.
-CFLAGS = -DTIME -Wall -pedantic -ansi
+#CFLAGS = -DTIME -Wall -pedantic -ansi
 
 
 ##############################################################################
@@ -93,8 +191,8 @@ TESTDIR = ./testdir
 RESULTDIR = ./results
 TMPDIR = ./tmp
 # other directories
-INCLDIR = /usr/include
-LIBDIR = /lib
+#INCLDIR = /usr/include
+#LIBDIR = /lib
 SCRIPTS = unixbench.logo multi.sh tst.sh index.base
 SOURCES = arith.c big.c context1.c \
 	dummy.c execl.c \
@@ -116,7 +214,7 @@ BINS = $(PROGDIR)/arithoh $(PROGDIR)/register $(PROGDIR)/short \
 	$(PROGDIR)/hanoi $(PROGDIR)/syscall $(PROGDIR)/context1 \
 	$(PROGDIR)/pipe $(PROGDIR)/spawn $(PROGDIR)/execl \
 	$(PROGDIR)/dhry2 $(PROGDIR)/dhry2reg  $(PROGDIR)/looper \
-	$(PROGDIR)/fstime $(PROGDIR)/whetstone-double $(GRAPHIC_BINS)
+	$(PROGDIR)/fstime $(PROGDIR)/whetstone-double $(GRAPHIC_BINS) $(PROGDIR)/poll $(PROGDIR)/select
 ## These compile only on some platforms...
 # $(PROGDIR)/poll $(PROGDIR)/poll2 $(PROGDIR)/select
 
@@ -182,63 +280,63 @@ programs: $(BINS)
 
 # Individual programs
 $(PROGDIR)/arithoh:	$(SRCDIR)/arith.c
-	$(CC) -o $(PROGDIR)/arithoh ${CFLAGS} ${OPTON} -Darithoh $(SRCDIR)/arith.c
+	$(CC) -o $(PROGDIR)/arithoh ${CFLAGS} ${OPTON} -Darithoh $(SRCDIR)/arith.c $(LDFLAGS)
 $(PROGDIR)/register: $(SRCDIR)/arith.c
-	$(CC) -o $(PROGDIR)/register ${CFLAGS} ${OPTON} -Ddatum='register int' $(SRCDIR)/arith.c
+	$(CC) -o $(PROGDIR)/register ${CFLAGS} ${OPTON} -Ddatum='register int' $(SRCDIR)/arith.c $(LDFLAGS)
 $(PROGDIR)/short: $(SRCDIR)/arith.c
-	$(CC) -o $(PROGDIR)/short ${CFLAGS} ${OPTON} -Ddatum=short $(SRCDIR)/arith.c
+	$(CC) -o $(PROGDIR)/short ${CFLAGS} ${OPTON} -Ddatum=short $(SRCDIR)/arith.c $(LDFLAGS)
 $(PROGDIR)/int: $(SRCDIR)/arith.c
-	$(CC) -o $(PROGDIR)/int ${CFLAGS} ${OPTON} -Ddatum=int $(SRCDIR)/arith.c
+	$(CC) -o $(PROGDIR)/int ${CFLAGS} ${OPTON} -Ddatum=int $(SRCDIR)/arith.c $(LDFLAGS)
 $(PROGDIR)/long: $(SRCDIR)/arith.c
-	$(CC) -o $(PROGDIR)/long ${CFLAGS} ${OPTON} -Ddatum=long $(SRCDIR)/arith.c
+	$(CC) -o $(PROGDIR)/long ${CFLAGS} ${OPTON} -Ddatum=long $(SRCDIR)/arith.c $(LDFLAGS)
 $(PROGDIR)/float: $(SRCDIR)/arith.c
-	$(CC) -o $(PROGDIR)/float ${CFLAGS} ${OPTON} -Ddatum=float $(SRCDIR)/arith.c
+	$(CC) -o $(PROGDIR)/float ${CFLAGS} ${OPTON} -Ddatum=float $(SRCDIR)/arith.c $(LDFLAGS)
 $(PROGDIR)/double: $(SRCDIR)/arith.c
-	$(CC) -o $(PROGDIR)/double ${CFLAGS} ${OPTON} -Ddatum=double $(SRCDIR)/arith.c
+	$(CC) -o $(PROGDIR)/double ${CFLAGS} ${OPTON} -Ddatum=double $(SRCDIR)/arith.c $(LDFLAGS)
 $(PROGDIR)/whetstone-double: $(SRCDIR)/whets.c
-	$(CC) -o $(PROGDIR)/whetstone-double ${CFLAGS} ${OPTON} -DDP -DUNIX -DUNIXBENCH $(SRCDIR)/whets.c -lm
+	$(CC) -o $(PROGDIR)/whetstone-double ${CFLAGS} ${OPTON} -DDP -DUNIX -DUNIXBENCH $(SRCDIR)/whets.c -lm $(LDFLAGS)
 $(PROGDIR)/hanoi: $(SRCDIR)/hanoi.c
-	$(CC) -o $(PROGDIR)/hanoi ${CFLAGS} ${OPTON} $(SRCDIR)/hanoi.c
+	$(CC) -o $(PROGDIR)/hanoi ${CFLAGS} ${OPTON} $(SRCDIR)/hanoi.c $(LDFLAGS)
 
 $(PROGDIR)/poll: $(SRCDIR)/time-polling.c
-	$(CC) -DHAS_POLL -DUNIXBENCH -o $(PROGDIR)/poll ${CFLAGS} ${OPTON} $(SRCDIR)/time-polling.c
+	$(CC) -DHAS_POLL -DUNIXBENCH -o $(PROGDIR)/poll ${CFLAGS} ${OPTON} $(SRCDIR)/time-polling.c $(LDFLAGS)
 
 $(PROGDIR)/poll2: $(SRCDIR)/time-polling.c
-	$(CC) -DHAS_POLL2 -DUNIXBENCH -o $(PROGDIR)/poll2 ${CFLAGS} ${OPTON} $(SRCDIR)/time-polling.c
+	$(CC) -DHAS_POLL2 -DUNIXBENCH -o $(PROGDIR)/poll2 ${CFLAGS} ${OPTON} $(SRCDIR)/time-polling.c $(LDFLAGS)
 
 $(PROGDIR)/select: $(SRCDIR)/time-polling.c
-	$(CC) -DHAS_SELECT -DUNIXBENCH -o $(PROGDIR)/select ${CFLAGS} ${OPTON} $(SRCDIR)/time-polling.c
+	$(CC) -DHAS_SELECT -DUNIXBENCH -o $(PROGDIR)/select ${CFLAGS} ${OPTON} $(SRCDIR)/time-polling.c $(LDFLAGS)
 
 $(PROGDIR)/fstime: $(SRCDIR)/fstime.c
-	$(CC) -o $(PROGDIR)/fstime ${CFLAGS} ${OPTON} $(SRCDIR)/fstime.c
+	$(CC) -o $(PROGDIR)/fstime ${CFLAGS} ${OPTON} $(SRCDIR)/fstime.c $(LDFLAGS)
 
 $(PROGDIR)/syscall: $(SRCDIR)/syscall.c
-	$(CC) -o $(PROGDIR)/syscall ${CFLAGS} ${OPTON} $(SRCDIR)/syscall.c
+	$(CC) -o $(PROGDIR)/syscall ${CFLAGS} ${OPTON} $(SRCDIR)/syscall.c $(LDFLAGS)
 $(PROGDIR)/context1: $(SRCDIR)/context1.c
-	$(CC) -o $(PROGDIR)/context1 ${CFLAGS} ${OPTON} $(SRCDIR)/context1.c
+	$(CC) -o $(PROGDIR)/context1 ${CFLAGS} ${OPTON} $(SRCDIR)/context1.c $(LDFLAGS)
 $(PROGDIR)/pipe: $(SRCDIR)/pipe.c
-	$(CC) -o $(PROGDIR)/pipe ${CFLAGS} ${OPTON} $(SRCDIR)/pipe.c
+	$(CC) -o $(PROGDIR)/pipe ${CFLAGS} ${OPTON} $(SRCDIR)/pipe.c $(LDFLAGS)
 $(PROGDIR)/spawn: $(SRCDIR)/spawn.c
-	$(CC) -o $(PROGDIR)/spawn ${CFLAGS} ${OPTON} $(SRCDIR)/spawn.c
+	$(CC) -o $(PROGDIR)/spawn ${CFLAGS} ${OPTON} $(SRCDIR)/spawn.c $(LDFLAGS)
 $(PROGDIR)/execl: $(SRCDIR)/execl.c $(SRCDIR)/big.c
-	$(CC) -o $(PROGDIR)/execl ${CFLAGS} ${OPTON} $(SRCDIR)/execl.c
+	$(CC) -o $(PROGDIR)/execl ${CFLAGS} ${OPTON} $(SRCDIR)/execl.c $(LDFLAGS)
 
 $(PROGDIR)/dhry2: $(SRCDIR)/dhry_1.c $(SRCDIR)/dhry_2.c $(SRCDIR)/dhry.h
 	cd $(SRCDIR); $(CC) -c ${CFLAGS} -DHZ=${HZ} ${OPTON} dhry_1.c
 	cd $(SRCDIR); $(CC) -c ${CFLAGS} -DHZ=${HZ} ${OPTON} dhry_2.c
-	$(CC) -o $(PROGDIR)/dhry2 ${CFLAGS} ${OPTON} $(SRCDIR)/dhry_1.o $(SRCDIR)/dhry_2.o
+	$(CC) -o $(PROGDIR)/dhry2 ${CFLAGS} ${OPTON} $(SRCDIR)/dhry_1.o $(SRCDIR)/dhry_2.o $(LDFLAGS)
 	cd $(SRCDIR); rm -f dhry_1.o dhry_2.o
 $(PROGDIR)/dhry2reg: $(SRCDIR)/dhry_1.c $(SRCDIR)/dhry_2.c $(SRCDIR)/dhry.h
 	cd $(SRCDIR); $(CC) -c ${CFLAGS} -DREG=register -DHZ=${HZ} ${OPTON} dhry_1.c -o dhry_1_reg.o
 	cd $(SRCDIR); $(CC) -c ${CFLAGS} -DREG=register -DHZ=${HZ} ${OPTON} dhry_2.c -o dhry_2_reg.o
-	$(CC) -o $(PROGDIR)/dhry2reg ${CFLAGS} ${OPTON} $(SRCDIR)/dhry_1_reg.o $(SRCDIR)/dhry_2_reg.o
+	$(CC) -o $(PROGDIR)/dhry2reg ${CFLAGS} ${OPTON} $(SRCDIR)/dhry_1_reg.o $(SRCDIR)/dhry_2_reg.o $(LDFLAGS)
 	cd $(SRCDIR); rm -f dhry_1_reg.o dhry_2_reg.o
 
 $(PROGDIR)/looper: $(SRCDIR)/looper.c
-	$(CC) -o $(PROGDIR)/looper ${CFLAGS} ${OPTON} $(SRCDIR)/looper.c
+	$(CC) -o $(PROGDIR)/looper ${CFLAGS} ${OPTON} $(SRCDIR)/looper.c $(LDFLAGS)
 
 $(PROGDIR)/ubgears: $(SRCDIR)/ubgears.c
-	$(CC) -o $(PROGDIR)/ubgears ${CFLAGS} ${OPTON} $(SRCDIR)/ubgears.c $(GL_LIBS)
+	$(CC) -o $(PROGDIR)/ubgears ${CFLAGS} ${OPTON} $(SRCDIR)/ubgears.c $(GL_LIBS) $(LDFLAGS)
 
 # Run the benchmarks and create the reports
 run:

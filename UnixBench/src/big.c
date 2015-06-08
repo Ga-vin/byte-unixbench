@@ -46,7 +46,9 @@
 #define MAXWORK		10
 
 /* Can't seem to get this declared in the headers... */
+#ifndef SYLIXOS
 extern int kill(pid_t pid, int sig);
+#endif
 
 void	wrapup(char *);
 void	onalarm(int);

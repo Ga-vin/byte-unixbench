@@ -66,8 +66,10 @@
 #include <errno.h>
 #include <stdlib.h>
 
+#ifndef SYLIXOS
 #define TRUE 1
 #define FALSE 0
+#endif
 #ifdef UNIXBENCH
 	#define MAX_ITERATIONS 1000
 #else

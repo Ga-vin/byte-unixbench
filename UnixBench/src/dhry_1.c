@@ -75,13 +75,17 @@ Enumeration     Func_1 ();
 
 #ifdef TIMES
 struct tms      time_info;
+#ifndef SYLIXOS
 extern  int     times ();
+#endif
                 /* see library function "times" */
 #define Too_Small_Time 120
                 /* Measurements should last at least about 2 seconds */
 #endif
 #ifdef TIME
+#ifndef SYLIXOS
 extern long     time();
+#endif
                 /* see library function "time"  */
 #define Too_Small_Time 2
                 /* Measurements should last at least 2 seconds */
