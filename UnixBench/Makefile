@@ -131,7 +131,7 @@ endif										    						# -Os is not align for function
 # depends and compiler parameter (cplusplus in kernel MUST NOT use exceptions and rtti)
 #*********************************************************************************************************
 COMMONFLAGS = $(CPUFLAGS) $(OPTIMIZE) -Wall -fmessage-length=0 -fsigned-char -fno-short-enums
-CFLAGS      = $(DSYMBOL) $(INCDIR) $(COMMONFLAGS) -fPIC -D_POSIX_C_SOURCE=200112L -c
+CFLAGS      = $(DSYMBOL) $(INCDIR) $(COMMONFLAGS) -fPIC -c
 LDFLAGS     = $(CPUFLAGS) -nostdlib -fPIC -shared $(DEPEND_DLL_PATH) $(DEPEND_DLL) -lm -lgcc
 # Add by jiaojinxing1987@gmail.com, The END.
 
