@@ -2,103 +2,103 @@ UB_BINDIR=/apps/unixbench
 shstack 512000
 
 echo ****************************
-echo arithoh 10
-./arithoh 10
+echo arithoh 60
+./arithoh 60
 echo ****************************
 echo
 
 echo ****************************
-echo dhry2 10
-./dhry2 10
+echo dhry2 60
+./dhry2 60
 echo ****************************
 echo
 
 echo ****************************
-echo dhry2reg 10
-./dhry2reg 10
+echo dhry2reg 60
+./dhry2reg 60
 echo ****************************
 echo
 
 echo ****************************
-echo double 10
-./double 10
+echo double 60
+./double 60
 echo ****************************
 echo
 
 echo ****************************
-echo float 10
-./float 10
+echo float 60
+./float 60
 echo ****************************
 echo
 
 echo ****************************
-echo hanoi 10
-./hanoi 10
+echo hanoi 60
+./hanoi 60
 echo ****************************
 echo
 
 echo ****************************
-echo int 10
-./int 10
+echo int 60
+./int 60
 echo ****************************
 echo
 
 echo ****************************
-echo long 10
-./long 10
+echo long 60
+./long 60
 echo ****************************
 echo
 
 echo ****************************
-echo pipe 10
-./pipe 10
+echo pipe 60
+./pipe 60
 echo ****************************
 echo
 
 echo ****************************
-echo register 10
-./register 10
+echo register 60
+./register 60
 echo ****************************
 echo
 
 echo ****************************
-echo short 10
-./short 10
+echo short 60
+./short 60
 echo ****************************
 echo
 
 echo ****************************
-echo syscall 10
-./syscall 10
+echo syscall 60
+./syscall 60
 echo ****************************
 echo
 
 echo ****************************
-echo fstime -c -t 10
-./fstime -c -t 10
+echo fstime -c -t 60
+./fstime -c -t 60
 echo ****************************
 echo
 
 echo ****************************
-echo execl 10
-./execl 10
+echo execl 60
+./execl 60
 echo ****************************
 echo
 
 echo ****************************
-echo select 10
-./select 10
+echo select 60
+./select 60
 echo ****************************
 echo
 
 echo ****************************
-echo poll 10
-./poll 10
+echo poll 60
+./poll 60
 echo ****************************
 echo
 
 echo ****************************
-echo whetstone-double 10
-./whetstone-double 10
+echo whetstone-double 60
+./whetstone-double 60
 echo ****************************
 echo

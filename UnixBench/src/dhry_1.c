@@ -75,7 +75,7 @@ Enumeration     Func_1 ();
 
 #ifdef TIMES
 struct tms      time_info;
-#ifndef SYLIXOS
+#if 0
 extern  int     times ();
 #endif
                 /* see library function "times" */

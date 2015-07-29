@@ -339,6 +339,7 @@ int r_test(int timeSecs)
 
         while (!sigalarm) {
                 /* read while checking for an error */
+                errno = 0;
                 if ((tmp=read(f, buf, bufsize)) != bufsize) {
                         switch(errno) {
                         case 0:
@@ -402,6 +403,7 @@ int c_test(int timeSecs)
         start = getFloatTime();
 
         while (!sigalarm) {
+                errno = 0;
                 if ((tmp=read(f, buf, bufsize)) != bufsize) {
                         switch(errno) {
                         case 0:

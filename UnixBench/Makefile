@@ -75,8 +75,8 @@ $(call check_defined, DEBUG_LEVEL, debug level(debug or release))
 # CPUFLAGS (-mcpu=arm920t ...)
 # NOTICE: libsylixos, BSP and other kernel modules projects CAN NOT use vfp!
 #*********************************************************************************************************
-FPUFLAGS = 
-CPUFLAGS = -mcpu=arm920t $(FPUFLAGS)
+FPUFLAGS = -mfloat-abi=softfp -mfpu=vfpv3
+CPUFLAGS = -mcpu=cortex-a8 $(FPUFLAGS)
 
 #*********************************************************************************************************
 # toolchain select
@@ -131,7 +131,7 @@ endif										    						# -Os is not align for function
 # depends and compiler parameter (cplusplus in kernel MUST NOT use exceptions and rtti)
 #*********************************************************************************************************
 COMMONFLAGS = $(CPUFLAGS) $(OPTIMIZE) -Wall -fmessage-length=0 -fsigned-char -fno-short-enums
-CFLAGS      = $(DSYMBOL) $(INCDIR) $(COMMONFLAGS) -fPIC -c
+CFLAGS      = $(DSYMBOL) $(INCDIR) $(COMMONFLAGS) -fPIC
 LDFLAGS     = $(CPUFLAGS) -nostdlib -fPIC -shared $(DEPEND_DLL_PATH) $(DEPEND_DLL) -lm -lgcc
 # Add by jiaojinxing1987@gmail.com, The END.
 
@@ -185,7 +185,7 @@ OPTON = -O2 -fomit-frame-pointer -fforce-addr -ffast-math -Wall
 
 
 # local directories
-PROGDIR = ./pgms
+PROGDIR = ./$(OUTDIR)
 SRCDIR = ./src
 TESTDIR = ./testdir
 RESULTDIR = ./results
